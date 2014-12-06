@@ -30,6 +30,7 @@
  *    Reddit
  *    Twitter
  *    Meetup
+ *    Rally Software
  */
 
 (function(){
@@ -487,6 +488,48 @@
                                 } else {
                                     deferred.reject("Problem authenticating");
                                 }
+                                browserRef.close();
+                            }
+                        });
+                    } else {
+                        deferred.reject("Could not find InAppBrowser plugin");
+                    }
+                } else {
+                    deferred.reject("Cannot authenticate via a web browser");
+                }
+                return deferred.promise;
+            },
+            
+            /*
+            * Sign into the Rally Software service
+            *
+            * @param    string clientId
+            * @param    string clientSecret
+            * @return   promise
+            */
+            rallySoftware: function(clientId, clientSecret) {
+                var deferred = $q.defer();
+                if(window.cordova) {
+                    var cordovaMetadata = cordova.require("cordova/plugin_list").metadata;
+                    if(cordovaMetadata.hasOwnProperty("org.apache.cordova.inappbrowser") === true) {
+                        var browserRef = window.open('https://rally1.rallydev.com/login/oauth2/auth?client_id=' + clientId + '&redirect_uri=http://localhost/callback&response_type=code&scope=alm&state=RandomUUID', '_blank', 'location=no,clearsessioncache=yes,clearcache=yes');
+                        browserRef.addEventListener('loadstart', function(event) {
+                            if((event.url).indexOf("http://localhost/callback") === 0) {
+                                requestToken = (event.url).split("code=")[1].split("&")[0];
+                                $http({method: "post", headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                                 url: "https://rally1.rallydev.com/login/oauth2/auth",
+                                                 data: {"code": requestToken ,
+                                                        "redirect_uri" :"http://localhost/callback",
+                                                        "grant_type" :"authorization_code",
+                                                        "client_id": clientId,
+                                                        "client_secret": clientSecret}
+                                              })
+                                              .success(function(data) {
+                                                  deferred.resolve(data.access_token);
+                                              })
+                                              .error(function(data, status) {
+                                                  deferred.reject("Problem authenticating");
+                                              });
                                 browserRef.close();
                             }
                         });
