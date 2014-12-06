@@ -515,7 +515,7 @@
                         var browserRef = window.open('https://rally1.rallydev.com/login/oauth2/auth?client_id=' + clientId + '&redirect_uri=http://localhost/callback&response_type=code&scope=alm&state=RandomUUID', '_blank', 'location=no,clearsessioncache=yes,clearcache=yes');
                         browserRef.addEventListener('loadstart', function(event) {
                             if((event.url).indexOf("http://localhost/callback") === 0) {
-                                requestToken = (event.url).split("code=")[1].split("&")[0];
+                                var requestToken = (event.url).split("code=")[1].split("&")[0];
                                 $http({method: "post", headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                                                  url: "https://rally1.rallydev.com/login/oauth2/auth",
                                                  data: {"code": requestToken ,
